@@ -1,5 +1,6 @@
 *.elf
 *.o
 *.a
+*.d
 /lib
 /bin

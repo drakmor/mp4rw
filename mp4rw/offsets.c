@@ -17,7 +17,13 @@ typedef struct payload_args {
   int  *payloadout;
 } payload_args_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 payload_args_t* payload_get_args(void);
+#ifdef __cplusplus
+}
+#endif
 
 typedef enum firmware_version : uint32_t {
 	V100 = 0x1000000,
@@ -87,8 +93,10 @@ static firmware_version_t get_system_software_version(void) {
 		return version;
 	}
 	size_t size = 4;
-	sysctlbyname("kern.sdk_version", &version, &size, NULL, 0);
-	version &= VERSION_MASK;
+	uint32_t raw_version = 0;
+	sysctlbyname("kern.sdk_version", &raw_version, &size, NULL, 0);
+	raw_version &= VERSION_MASK;
+	version = (firmware_version_t)raw_version;
 	return version;
 }
 

@@ -3,6 +3,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+#ifndef restrict
+#define restrict __restrict__
+#endif
+#endif
+
 
 constexpr int ERROR_VALUE = -1;
 constexpr int SUCCESS_VALUE = 0;

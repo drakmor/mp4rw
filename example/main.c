@@ -11,7 +11,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void kernel_copyout(uint64_t ksrc, void *dest, size_t length);
+#ifdef __cplusplus
+}
+#endif
 
 // coredump buffer is 0x200000
 // don't try to read more then this

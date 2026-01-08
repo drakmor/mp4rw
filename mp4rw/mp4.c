@@ -47,7 +47,13 @@ static uintptr_t coredump_buffer_address = 0;
 static uintptr_t coredump_buffer_iommu_address = 0;
 static uintptr_t coredump_buffer_size_address = 0;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern uint64_t sceKernelReadTsc(void);
+#ifdef __cplusplus
+}
+#endif
 
 static uintptr_t device_get_next(uintptr_t device) {
 	return kread_uintptr(device + DEVICE_DEVLINK_OFFSET);
@@ -215,7 +221,7 @@ static int run_coredump(void) {
 
 	uint32_t ctx[] = {12, 0, 0, 0, 0, 0}; // 12 is ioctl arg size
 	struct kevent event = {
-		.ident = fd,
+		.ident = (uintptr_t)fd,
 		.filter = EVFILT_READ,
 		.flags = EV_ADD,
 		.fflags = 0,
@@ -354,10 +360,14 @@ static int send_packet_with_event(deci5s_header_t *restrict pkt, const void *buf
 	int err = ERROR_VALUE;
 	int fd = open("/dev/mp4/dump", 0, 0);
 	int kq = kqueue();
+	uint32_t buffer_size = 0;
+	uint64_t buffer = 0;
+	uint32_t buffer_lo = 0;
+	uint32_t buffer_hi = 0;
 
 	uint32_t ctx[] = {8, 0};
 	struct kevent event = {
-		.ident = fd,
+		.ident = (uintptr_t)fd,
 		.filter = EVFILT_READ,
 		.flags = EV_ADD,
 		.fflags = 0,
@@ -380,12 +390,10 @@ static int send_packet_with_event(deci5s_header_t *restrict pkt, const void *buf
 		goto done;
 	}
 
-	uint32_t buffer_size = (uint32_t) get_coredump_buffer_size();
-
-	uint64_t buffer = get_coredump_buffer_iommu();
-
-	uint32_t buffer_lo = (uint32_t) buffer;
-	uint32_t buffer_hi = (uint32_t)(buffer >> 0x20);
+	buffer_size = (uint32_t)get_coredump_buffer_size();
+	buffer = get_coredump_buffer_iommu();
+	buffer_lo = (uint32_t)buffer;
+	buffer_hi = (uint32_t)(buffer >> 0x20);
 
 	msi_write_c2p_arg1(buffer_hi);
 	msi_write_c2p_arg2(buffer_lo);
@@ -488,7 +496,7 @@ static int send_read(uintptr_t addr, size_t length, mp4_memory_type_t type) {
 		},
 		.arg = {
 			.self_size = sizeof(deci5s_memory_arg_t),
-			.access_size = get_access_size(addr, length),
+			.access_size = (uint32_t)get_access_size(addr, length),
 			.type = type,
 			.addr = addr,
 			.size = length
@@ -598,7 +606,7 @@ static int send_write(uintptr_t addr, const void *src, size_t length, mp4_memory
 			.header = {
 				.magic = DECI5S_MAGIC,
 				.self_size = sizeof(deci5s_header_t),
-				.packet_size = sizeof(single_write_command_t) + length,
+				.packet_size = (uint32_t)(sizeof(single_write_command_t) + length),
 				.src = DECI5S_TARGET_KERNEL,
 				.dst = DECI5S_TARGET_MP4,
 				.protocol_id = DECI5S_PROTOCOL_ID_SDBGP,
@@ -623,7 +631,7 @@ static int send_write(uintptr_t addr, const void *src, size_t length, mp4_memory
 		},
 		.arg = {
 			.self_size = sizeof(deci5s_memory_arg_t),
-			.access_size = get_access_size(addr, length),
+			.access_size = (uint32_t)get_access_size(addr, length),
 			.type = type,
 			.addr = addr,
 			.size = length

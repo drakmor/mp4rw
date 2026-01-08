@@ -6,8 +6,16 @@
 
 constexpr uint32_t PROC_UCRED_OFFSET = 0x40;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void kernel_copyin(const void *src, uint64_t kdest, size_t length);
 void kernel_copyout(uint64_t ksrc, void *dest, size_t length);
+
+#ifdef __cplusplus
+}
+#endif
 
 static inline uint32_t kread32(uintptr_t addr) {
 	uint32_t res = 0;

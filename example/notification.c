@@ -18,7 +18,13 @@ typedef struct {
 	char unkstr[1024];       //0x82D
 } SceNotificationRequest;  //Size = 0xC30
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 int sceKernelSendNotificationRequest(int device, SceNotificationRequest *req, size_t size, int blocking);
+#ifdef __cplusplus
+}
+#endif
 
 void printf_notification(const char* msg) {
     SceNotificationRequest noti_buffer;
